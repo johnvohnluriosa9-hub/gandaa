@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TutorLink</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f4f2fc;color:#37314b}
+header{background:#7052ad;color:white;padding:28px}main{max-width:850px;margin:auto;padding:20px}
+.card{background:white;padding:22px;border-radius:15px;margin:20px 0}
+input,select,textarea,button{width:100%;padding:12px;margin:6px 0;border:1px solid #ddd;border-radius:9px}
+button{background:#7052ad;color:white;border:0;cursor:pointer}
+.item{padding:15px;border-bottom:1px solid #eee}.actions{display:flex;gap:8px}.actions button{width:auto}
+</style></head>
+<body>
+<header><h1>📚 TutorLink</h1><p>Learn together, grow together.</p></header>
+<main>
+<div class="card"><h2>Post Tutoring Offer</h2>
+<input id="tutor" placeholder="Tutor name">
+<input id="subject" placeholder="Subject">
+<select id="mode"><option>Face-to-face</option><option>Online</option></select>
+<input id="schedule" placeholder="Available schedule">
+<textarea id="details" placeholder="Tutoring details"></textarea>
+<button id="add">Publish Offer</button></div>
+<div class="card"><h2>Tutoring Offers</h2>
+<input id="search" placeholder="Search tutors or subjects..."><div id="list"></div></div>
+</main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id),key='tutorlink28';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let data=[];try{data=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(data))data=[]}catch{}
+function save(){localStorage.setItem(key,JSON.stringify(data));render()}
+function add(){
+let n=$('tutor').value.trim(),s=$('subject').value.trim(),m=$('mode').value,t=$('schedule').value.trim(),d=$('details').value.trim();
+if(!n||!s||!t||!d)return alert('Complete all fields.');
+data.unshift({id:Date.now().toString()+Math.random(),n,s,m,t,d});
+['tutor','subject','schedule','details'].forEach(id=>$(id).value='');save();
+}
+function edit(id){
+let x=data.find(a=>a.id===id);if(!x)return;
+let t=prompt('Schedule:',x.t);if(t===null)return;if(!t.trim())return alert('Schedule is required.');
+let d=prompt('Details:',x.d);if(d===null)return;if(!d.trim())return alert('Details are required.');
+x.t=t.trim();x.d=d.trim();save();
+}
+function del(id){if(confirm('Delete tutoring offer?')){data=data.filter(x=>x.id!==id);save()}}
+function render(){
+let q=$('search').value.toLowerCase();
+$('list').innerHTML=data.filter(x=>(x.n+x.s+x.m+x.t).toLowerCase().includes(q)).map(x=>`
+<div class="item"><h3>👨‍🏫 ${esc(x.n)}</h3><b>${esc(x.s)}</b>
+<p>${esc(x.m)} | ${esc(x.t)}</p><p>${esc(x.d)}</p>
+<div class="actions"><button data-edit="${x.id}">Edit</button><button data-del="${x.id}">Delete</button></div></div>`).join('')||'No tutoring offers yet.'}
+$('add').addEventListener('click',add);$('search').addEventListener('input',render);
+$('list').addEventListener('click',e=>{if(e.target.dataset.edit)edit(e.target.dataset.edit);if(e.target.dataset.del)del(e.target.dataset.del)});
+render();
+})();
+</script></body></html>
